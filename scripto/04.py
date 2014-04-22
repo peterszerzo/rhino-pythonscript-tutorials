@@ -3,9 +3,10 @@
 Rhino Python Script Tutorial
 Exercise 04
 
-For loops Level 2.
+More for.
 
-Draw points along a parabola.
+Let's work with this some more.
+This is a parabola.
 
 """
 

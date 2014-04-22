@@ -22,8 +22,10 @@
 Rhino Python Script Tutorial
 Exercise 00
 
-This is how an empty script file looks like.
-If you run it, it does nothing.
+Below you can see how an empty script file looks like.
+Type "RunPythonScript" in the Rhino command line, and navigate to this file.
+Run it.
+It does nothing, as expected.
 However, it is the 'frame' in which all the groovy modeling commands go.
 
 It actually does things, but you don't need to understand this fully yet:
