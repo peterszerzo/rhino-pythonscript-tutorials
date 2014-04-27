@@ -35,7 +35,9 @@ def z2(x, y):
 def Main():
 
 	for ix in range(0, nx):
+	
 		for iy in range(0, ny):
+		
 			x = (ix / (nx - 1) - 0.5) * ax
 			y = (iy / (ny - 1) - 0.5) * ay
 			rs.AddPoint(x, y, 5 * z2(x, y))

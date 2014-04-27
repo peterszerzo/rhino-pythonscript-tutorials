@@ -6,6 +6,7 @@ Advanced
 Exercise 00
 
 Simulate particle-spring system.
+Work in Progress!
 
 """
 
@@ -35,8 +36,7 @@ class Particle:
 		
 	
 	def freeze(self):
-		
-		self.velocity = [0, 0, 0]	
+		self.velocity = [0, 0, 0]
 		
 		
 	def update_position(self, dt):
@@ -49,7 +49,6 @@ class Particle:
 			
 		
 	def fix_all(self):
-		
 		self.freedom = [0, 0, 0]
 		
 		
@@ -71,13 +70,16 @@ class Particle:
 		
 		
 	def draw(self):
-	
 		rs.AddPoint(self.position)
 		
 		
 	def kinetic_energy(self):
 	
-		return self.mass[0] * self.velocity[0] ** 2	/ 2 + self.mass[1] * self.velocity[1] ** 2	/ 2 + self.mass[2] * self.velocity[2] ** 2	/ 2
+		ke = 0
+		ke += self.mass[0] * self.velocity[0] ** 2	/ 2
+		ke += self.mass[1] * self.velocity[1] ** 2	/ 2
+		ke += self.mass[2] * self.velocity[2] ** 2	/ 2
+		return ke
 		
 		
 class Spring:
@@ -87,33 +89,31 @@ class Spring:
 		self.n1 = node_index_1
 		self.n2 = node_index_2
 		self.stiffness = 100
-		self.length = self.get_length()
-		self.rest_length = 0.8 * self.length
+		self.vector = []
+		self.length = 0		
+		self.rest_length = 0
+				
 		
-	def get_length(self):
+	def update(self, particles):
 	
-		spring_vector = self.get_vector()
-		return (spring_vector[0] ** 2 + spring_vector[1] ** 2 + spring_vector[2] ** 2) ** 0.5
+		spring_vector = particles[self.n2].position_from(particles[self.n1])	
+		self.vector = spring_vector
 		
-			
-	def update_length(self):
-	
-		self.length = self.get_length()
+		l = (spring_vector[0] ** 2 + spring_vector[1] ** 2 + spring_vector[2] ** 2) ** 0.5
+		self.length = l
 		
-	
-	def get_vector(self):
-	
-		return self.particles[self.n2].position_from(self.particles[self.n1])
-	
-	
-	def get_force_1(self):
-	
-		return 0
+		self.force = self.stiffness * (self.length - self.rest_length)
+		
+		v0 = self.vector[0]	
+		v1 = self.vector[1]	
+		v2 = self.vector[2]
+		
+		self.vector = [v0 / l, v1 / l, v2 / l]
 			
 			
-	def draw(self):
+	def draw(self, particles):
 	
-		rs.AddLine(self.particles[self.n1].position, self.particles[self.n2].position)	
+		rs.AddLine(particles[self.n1].position, particles[self.n2].position)	
 			
 
 class ParticleSpringSystem:
@@ -136,7 +136,6 @@ class ParticleSpringSystem:
 		
 	def add_spring(self, spring):
 	
-		spring.particles = self.particles
 		self.springs.append(spring)
 		
 		
@@ -144,7 +143,7 @@ class ParticleSpringSystem:
 	
 		for spring in self.springs:
 			
-			spring.draw()
+			spring.draw(self.particles)
 			
 		for particle in self.particles:
 		
@@ -160,16 +159,12 @@ class ParticleSpringSystem:
 			
 		for spring in self.springs:
 		
-			spring.update_length()
-		
-			i1 = spring.n1
-			i2 = spring.n2
-						
-			self.particles[i1].add_force(- spring_force / spring_length, spring_vector)
-			self.particles[i2].add_force(+ spring_force / spring_length, spring_vector)
+			spring.update(self.particles)
+			self.particles[spring.n1].add_force(+ spring.force, spring.vector)
+			self.particles[spring.n2].add_force(- spring.force, spring.vector)
 			
 			
-	def advance_time_step(self, dt):
+	def advance_time_step(self):
 	
 		self.set_dynamics()
 		
@@ -177,8 +172,8 @@ class ParticleSpringSystem:
 	
 		for particle in self.particles:
 			
-			particle.update_velocity(dt)
-			particle.update_position(dt)	
+			particle.update_velocity(self.dt)
+			particle.update_position(self.dt)	
 			
 			kinetic_energy = kinetic_energy + particle.kinetic_energy()		
 
@@ -196,14 +191,12 @@ class ParticleSpringSystem:
 
 def Main():
 	
-	nx = 10
-	ny = 20
+	nx = 5
+	ny = 5
 	
 	ax = 10
-	ay = 20
+	ay = 10
 
-	dt = 0.02
-	
 	ps = ParticleSpringSystem("system1")
 	
 	for ix in range(0, nx):
@@ -223,16 +216,22 @@ def Main():
 	for ix in range(0, nx):
 	
 		for iy in range(0, ny):
-		
+						
 			if (ix < (nx - 1)):
-				ps.add_spring( Spring(ix * ny + iy, (ix + 1) * ny + iy) )
+				spring1 = Spring( (ix + 0) * ny + (iy + 0), (ix + 1) * ny + (iy + 0) )
+				spring1.update(ps.particles)
+				spring1.rest_length = spring1.length * 0.8
+				ps.add_spring(spring1)
 				
 			if (iy < (ny - 1)):
-				ps.add_spring( Spring(ix * ny + iy, ix * ny + (iy + 1)) )
+				spring2 = Spring( (ix + 0) * ny + (iy + 0), (ix + 0) * ny + (iy + 1) )
+				spring2.update(ps.particles)
+				spring2.rest_length = spring2.length * 0.8
+				ps.add_spring(spring2)
 	
 	
-	for i in range(0, 2000):	
-		ps.advance_time_step(2 * dt)
+	for i in range(0, 200):	
+		ps.advance_time_step()
 			
 	ps.draw()
 	
