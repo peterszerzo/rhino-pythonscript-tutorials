@@ -1,13 +1,9 @@
 """
 
 Rhino Python Script Tutorial
-Exercise 07
+Exercise 08
 
-Let's reorganize the previous code to store the coordinates of our points in a list.
-
-This list is called an array. 
-
-The following lesson explains why this is useful.
+Now that we stored the points in an array, we can use this array to draw lines between the points.
 
 """
 
@@ -35,8 +31,12 @@ def Main():
                 
         point = [radius * math.cos(angle), radius * math.sin(angle),0]
 
-        rs.AddPoint(point)
+        # rs.AddPoint(point)
 
         points.append(point)
+
+    for i in range(0, n-1):
+
+        rs.AddLine(points[i], points[i + 1])
         
 Main()

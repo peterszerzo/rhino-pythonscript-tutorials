@@ -37,8 +37,6 @@ def Main():
     rs.AddPoint([0,0,8])
     rs.AddPoint([0,0,9])
     
-    Saves a bucket load of typing.
-    
     """
 
 Main()
