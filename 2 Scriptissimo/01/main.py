@@ -40,24 +40,32 @@ def draw_linestring(ls):
 		rs.AddLine([ls[i][0], ls[i][1], 0], [ls[i+1][0], ls[i+1][1], 0])
 
 
-def draw_polygon(polygon):
+def draw_polygon(pg):
 
 	"""Draws polygon."""
 
-	n = len(polygon)
+	for ls in pg:
 
-	for i in range(n - 1):
-
-		rs.AddLine([polygon[i][0], polygon[i][1], 0], [polygon[i+1][0], polygon[i+1][1], 0])
+		draw_linestring(ls)
 
 
 def draw_multipolygon(mp):
 
 	"""Draws multipolygon."""
 
-	for polygon in mp:
+	for pg in mp:
 
-		draw_polygon(polygon)
+		draw_polygon(pg)
+
+
+draw_dict = {
+	
+	"Point": draw_point,
+	"LineString": draw_linestring,
+	"Polygon": draw_polygon,
+	"MultiPolygon": draw_multipolygon
+
+}
 
 
 def import_feature(feature):
@@ -67,23 +75,27 @@ def import_feature(feature):
 	geometry = feature["geometry"]
 	coordinates = geometry["coordinates"]
 
-	if (geometry["type"] == "Point"):
+	draw_dict[geometry["type"]](coordinates)
 
-		draw_point(coordinates)
 
-	elif (geometry["type"] == "LineString"):
+def get_sublayer_name(properties):
 
-		draw_linestring(coordinates)
+	"""Loops through properties hash and returns key meeting the following two criteria:
+	1. is not 'name'
+	2. does not end in 'id'
+	Such keys have many distinct values in a typical featurecollection and would produce many layers (hundrends of thousands, to be precise).
+	"""
 
-	elif (geometry["type"] == "Polygon"):
+	for key in properties:
 
-		for coordinate in coordinates:
-			draw_polygon(coordinate)
+		value = properties[key]
 
-	elif (geometry["type"] == "MultiPolygon"):
+		if (key != "name") and ((len(key) < 2) or (key[-2:] != "id")) and (value is not None):
 
-		for coordinate in coordinates:
-			draw_multipolygon(coordinate)
+			return key
+
+	return "_unorganized_";
+
 
 
 def import_file(name):
@@ -107,13 +119,10 @@ def import_file(name):
 
 		for feature in features:
 
-			#sublayer = feature['properties']['name']
+			sublayer = get_sublayer_name(feature["properties"])
 
-			#if sublayer == None:
-			#	sublayer = 'no-name'
-
-			#rs.AddLayer(feature['properties']['name'], parent = layer)
-			#rs.CurrentLayer(layer + '::' + feature['properties']['name'])
+			rs.AddLayer(sublayer, parent = layer)
+			rs.CurrentLayer(layer + '::' + sublayer)
 
 			import_feature(feature)
 

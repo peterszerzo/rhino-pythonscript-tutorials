@@ -21,7 +21,6 @@ def Main():
     n = 50
     radius = 3
     
-    
     for i in range(0, n): # notice how range() accepts variables
     
     	# a little trick here: as i goes from 0 to n-1, k will go from 0 to 1
